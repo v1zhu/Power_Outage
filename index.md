@@ -163,12 +163,14 @@ We analyzed whether the missingness of `CUSTOMERS.AFFECTED` depends on other col
 
 - **Null:** Missingness of `CUSTOMERS.AFFECTED` does not depend on `OUTAGE.DURATION`
 - **Alternative:** Missingness of `CUSTOMERS.AFFECTED` depends on `OUTAGE.DURATION`
+**Test Statistic:** Difference in mean `OUTAGE.DURATION` between missing and 
+non-missing groups
 - **Result:** p-value = 0.0282 < 0.05 → reject null. The missingness of 
 `CUSTOMERS.AFFECTED` is dependent on `OUTAGE.DURATION`, suggesting it is **MAR** 
 with respect to outage duration. Longer outages are more likely to have customer 
 impact recorded.
 
-<iframe src="plots/missingness_duration.html" width="800" height="500" frameborder="0"></iframe>
+<iframe src="plots/missingness_permutation.html" width="800" height="500" frameborder="0"></iframe>
 
 The distribution of outage duration differs noticeably between rows where 
 `CUSTOMERS.AFFECTED` is missing vs. not missing, confirming the dependency. 
@@ -178,5 +180,39 @@ Outages with missing customer data tend to be shorter on average.
 
 - **Null:** Missingness of `CUSTOMERS.AFFECTED` does not depend on `TOTAL.PRICE`
 - **Alternative:** Missingness of `CUSTOMERS.AFFECTED` depends on `TOTAL.PRICE`
+**Test Statistic:** Difference in mean `TOTAL.PRICE` between missing and 
+non-missing groups
 - **Result:** p-value 0.8248 > 0.05 → fail to reject null. No significant dependency 
-found between missingness and electricity price.
+found between missingness and electricity price. There is insufficient 
+evidence to conclude that the missingness of `CUSTOMERS.AFFECTED` depends on 
+electricity price. The observed difference is consistent with random chance.
+
+## Hypothesis Testing
+
+We investigated whether power outages are equally likely to start at any time 
+of day, or whether outages disproportionately occur during certain periods.
+
+**Groups:**
+- **Day:** outages starting between 6am and 6pm
+- **Night:** outages starting between 6pm and 6am
+
+**Null Hypothesis:** Power outages start times are uniformly distributed — 
+outages are equally likely to begin during the day or night.
+
+**Alternative Hypothesis:** Power outages are not uniformly distributed across 
+the day — outages occur at different frequencies during day vs. night.
+
+**Test Statistic:** Difference between the maximum and minimum proportion of 
+outages across the two time periods (day vs. night). This is a good choice 
+because under the null hypothesis of uniformity, both groups should have equal 
+proportions (~0.5), making the difference close to 0. A large observed difference 
+suggests the distribution is not uniform.
+
+**Significance Level:** 0.05
+
+**Result:** p-value ≈ 0.0000
+
+**Conclusion:** Since our p-value is far below our significance level of 0.05, 
+we reject the null hypothesis. The data suggests that power outages do not start 
+uniformly throughout the day.
+<iframe src="plots/hypothesis_test.html" width="800" height="500" frameborder="0"></iframe>
