@@ -189,7 +189,7 @@ electricity price. The observed difference is consistent with random chance.
 
 ## Hypothesis Testing
 
-Iinvestigated whether power outages are equally likely to start at any time 
+I investigated whether power outages are equally likely to start at any time 
 of day, or whether outages disproportionately occur during certain periods.
 
 **Groups:**
@@ -237,7 +237,6 @@ I only used features that would be known at the moment an outage begins:
 - `CLIMATE.CATEGORY` — known from weather monitoring at time of outage
 - `ANOMALY.LEVEL` — known from climate data at time of outage
 - `START.HOURS` — known from the outage start timestamp
-- `DAY.OF.WEEK` - know when the outage start
 
 I explicitly excluded features like `CUSTOMERS.AFFECTED` and 
 `OUTAGE.RESTORATION` since these are only known **after** the outage has already 
@@ -285,8 +284,7 @@ I do not believe this is a good model for several reasons:
 - A MAE of ~1,313 minutes (~22 hours) on test data means the model is off by 
 nearly a full day on a typical prediction, while the median outage duration is 
 only ~700 minutes — the model's error is larger than the typical outage itself
-- The train and test performance are very similar, which tells us the model is 
-not overfitting. Linear Regression is too simple  to capture the non-linear relationships
+- Linear Regression is too simple  to capture the non-linear relationships
 between these features and outage duration
 - The model only uses three features and ignores potentially useful information
 - Linear Regression assumes a linear relationship between features and the target, 
@@ -341,9 +339,9 @@ to not include information that is already in another column.
 
 ### Modeling Algorithm
 
-We chose a **Random Forest Regressor** for the final model.
+I chose a **Random Forest Regressor** for the final model.
 
-We used **GridSearchCV with 5-fold cross validation** to tune the following 
+I used **GridSearchCV with 5-fold cross validation** to tune the following 
 hyperparameters:
 
 | Hyperparameter | Values Searched | Best Value |
@@ -361,7 +359,7 @@ hyperparameters:
 
 ### Is This an Improvement?
 
-Yes — our final model is a substantial improvement over the baseline:
+Yes — the final model is a substantial improvement over the baseline:
 - Test MAE dropped from around 1300 minutes to around 500 minutes, a reduction of over 
 **60%**
 - The model now predicts ~8 hours of the true duration on a typical outage, 
@@ -379,7 +377,7 @@ target transformation all contributed to this improvement
 - **Group Y (Western):** Outages in the western interconnection grid region 
 (WECC) — 91 test samples
 
-We chose this split because the eastern and western interconnections represent 
+I chose this split because the eastern and western interconnections represent 
 two fundamentally different power grid infrastructures in the United States, 
 with different utility structures, geography, and climate exposure. Importantly, 
 `NERC.REGION` was not used as a feature in our model, making this a 
@@ -390,14 +388,14 @@ meaningful external fairness check.
 metric, and robust to the outliers present in outage duration data.
 
 ### Hypotheses
-- **Null Hypothesis:** Our model is fair. Any difference in MAE between eastern 
+- **Null Hypothesis:** The model is fair. Any difference in MAE between eastern 
 and western grid regions is due to random chance.
-- **Alternative Hypothesis:** Our model is unfair. It performs differently in 
+- **Alternative Hypothesis:** The model is unfair. It performs differently in 
 terms of MAE for eastern vs. western grid regions.
 
 ### Test Statistic
-**Difference in MAE (eastern − western).** We use absolute difference in MAE 
-because we are interested in whether the model performs differently in either 
+**Difference in MAE (eastern − western).** I used absolute difference in MAE 
+because I am interested in whether the model performs differently in either 
 direction, not just one.
 
 ### Significance Level
@@ -405,15 +403,14 @@ direction, not just one.
 
 ### Results
 
-| | Eastern | Western |
 |--|---------|---------|
-| Group Size | 198 | 89 |
+| Group Size | Eastern- 198 | Western- 89 |
 | Observed MAE Difference | 378.35 minutes | — |
-| P-value | 0.000 | 0.03 |
+| P-value | 0.03 | - |
 
 ### Conclusion
-Since our p-value of 0.03 is below our significance level of 0.05, we 
-reject the null hypothesis. The results suggest our model may not be fair 
+Since the p-value of 0.03 is below our significance level of 0.05, we can  
+reject the null hypothesis. The results suggest the model may not be fair 
 across grid regions,it appears to perform significantly differently for eastern 
 vs. western outages. This likely reflects the fact that our training data contains 
 more eastern outages, giving the model more exposure to eastern outage patterns. 
