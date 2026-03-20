@@ -103,9 +103,19 @@ lasting under 10,000 minutes but a long tail of extreme events
 stretching beyond 100,000 minutes. This skew motivated the use of a log 
 transformation on the target variable during modeling.
 
-This next graph shows the average duration of power outages for each cause category.
+This next graph shows the distribution of the cause of power outages.
 
-<iframe src="plots/outage_average_by_cause.html" width="800" height="500" frameborder="0"></iframe>
+<iframe src="plots/cause_dist.html" width="800" height="500" frameborder="0"></iframe>
+
+The graph shows that there is the most amount of power outages caused by severe weather, then
+international attacks.
+---
+
+### Bivariate Analysis
+
+This graph shows the average power outage duration for each cause category. 
+
+<iframe src="plots/outage_average_by_cause" width="800" height="500" frameborder="0"></iframe>
 
 Fuel supply emergencies cause the longest average outages by 
 far, while intentional attacks and islanding tend to resolve much faster. 
@@ -117,10 +127,6 @@ This graph displays the average outage duration for each state in minutes.
 
 Average outage duration varies substantially by state, with states in the eastern part generally having longer
 power outage durations. This geographic pattern suggests that climate region will play a role in outage duration.
-
----
-
-### Bivariate Analysis
 
 The boxplot below shows outage duration by climate category on a log scale:
 
@@ -182,7 +188,7 @@ Outages with missing customer data tend to be shorter on average.
 - **Alternative:** Missingness of `CUSTOMERS.AFFECTED` depends on `TOTAL.PRICE`
 - **Test Statistic:** Difference in mean `TOTAL.PRICE` between missing and 
 non-missing groups
-- **Result:** p-value 0.8248 > 0.05 → fail to reject null. No significant dependency 
+- **Result:** p-value 0.6774 > 0.05 → fail to reject null. No significant dependency 
 found between missingness and electricity price. There is insufficient 
 evidence to conclude that the missingness of `CUSTOMERS.AFFECTED` depends on 
 electricity price. The observed difference is consistent with random chance.
@@ -213,7 +219,7 @@ suggests the distribution is not uniform.
 **Result:** p-value ≈ 0.0000
 
 **Conclusion:** Since the p-value is far below the significance level of 0.05, 
-I reject the null hypothesis. The data suggests that power outages do not start 
+we can reject the null hypothesis. The data suggests that power outages do not start 
 uniformly throughout the day.
 <iframe src="plots/hypothesis_test.html" width="800" height="500" frameborder="0"></iframe>
 
@@ -275,13 +281,13 @@ outage started during the daytime or nighttime.
 
 | Metric | Train | Test |
 |--------|-------|------|
-| Median Absolute Error | 1294.5 min | 1313.4 min |
+| Median Absolute Error | 1268.9 min | 1235.2 min |
 
 ### Is This a Good Model?
 
 I do not believe this is a good model for several reasons:
 
-- A MAE of ~1,313 minutes (~22 hours) on test data means the model is off by 
+- A MAE of ~1,235 minutes (~21 hours) on test data means the model is off by 
 nearly a full day on a typical prediction, while the median outage duration is 
 only ~700 minutes — the model's error is larger than the typical outage itself
 - Linear Regression is too simple  to capture the non-linear relationships
@@ -307,25 +313,27 @@ during normal conditions. Linear combinations of the two separate features
 cannot capture this interaction, so encoding them together as a nominal feature 
 gives the model access to this information directly.
 
-**2. `ANOMALY.LEVEL` (added quantitative feature)**
+**2. ANOMALY.LEVEL` (engineered quantitative feature)**
 The El Niño/La Niña anomaly index measures how abnormal climate conditions are 
 at the time of the outage. Higher anomaly levels are associated with more extreme 
 weather events, which likely leads to more severe infrastructure damage and longer 
-restoration times.
+restoration times. I applied a `QuantileTransformer` to this feature, which 
+maps the raw anomaly values to a uniform distribution regardless of their original 
+shape.
 
 **3. `time_period` (kept from baseline)**
-I kept the day/night feature since our hypothesis test showed outages are not 
+I kept the day/night feature since the hypothesis test showed outages are not 
 uniformly distributed across the day, suggesting time of day carries real 
 predictive signal about outage characteristics.
 
 **4. Log transformation on target via `TransformedTargetRegressor`**
-Since `OUTAGE.DURATION` is heavily right-skewed, we applied a `log1p` transform 
+Since `OUTAGE.DURATION` is heavily right-skewed, I applied a `log1p` transform 
 to the target before training and `expm1` to inverse transform predictions. This 
 compresses the scale from 0–100,000 minutes to a much tighter range, allowing 
 the model to learn more effectively without extreme outliers dominating the loss.
 
 **5. `CAUSE.CATEGORY` (removed)**
-Since we have the new feature engineered `CAUSE.CLIMATE` I removed `CAUSE.CATEGORY`,
+Since there is the the new feature engineered `CAUSE.CLIMATE` I removed `CAUSE.CATEGORY`,
 to not include information that is already in another column.
 
 ### Features Summary
@@ -347,7 +355,7 @@ hyperparameters:
 | Hyperparameter | Values Searched | Best Value |
 |----------------|----------------|------------|
 | `n_estimators` | 100, 200, 300 | 200 |
-| `max_depth` | 5, 10, 20, 30 | 20 |
+| `max_depth` | 5, 10, 20, 30 | 10 |
 | `min_samples_leaf` | 10, 20, 50 | 10 |
 
 ### Performance Comparison
@@ -355,15 +363,15 @@ hyperparameters:
 | Model | Train MAE | Test MAE |
 |-------|-----------|-----------|
 | Baseline (Linear Regression) | 1294.5 min | 1313.4 min |
-| Final (Random Forest) | 520.4 min | 507.8 min |
+| Final (Random Forest) | 530.7 min | 520.3 min |
 
 ### Is This an Improvement?
 
 Yes — the final model is a substantial improvement over the baseline:
-- Test MAE dropped from around 1300 minutes to around 500 minutes, a reduction of over 
+- Test MAE dropped from around 1300 minutes to around 520 minutes, a reduction of around 
 **60%**
-- The model now predicts ~8 hours of the true duration on a typical outage, 
-compared to ~22 hours for the baseline
+- The model now predicts ~9 hours of the true duration on a typical outage, 
+compared to ~21 hours for the baseline
 - Unlike the baseline, the test MAE is slightly lower than train MAE, suggesting 
 the model generalizes well to unseen data without significant overfitting
 - The combination of better features, a more powerful algorithm, and the log 
@@ -373,18 +381,18 @@ target transformation all contributed to this improvement
 
 ### Groups
 - **Group X (Eastern):** Outages in the eastern interconnection grid regions 
-(RFC, SERC, NPCC, MRO, FRCC, SPP, TRE) — 199 test samples
+(RFC, SERC, NPCC, MRO, FRCC, SPP, TRE) — 200 test samples
 - **Group Y (Western):** Outages in the western interconnection grid region 
 (WECC) — 91 test samples
 
 I chose this split because the eastern and western interconnections represent 
 two fundamentally different power grid infrastructures in the United States, 
 with different utility structures, geography, and climate exposure. Importantly, 
-`NERC.REGION` was not used as a feature in our model, making this a 
+`NERC.REGION` was not used as a feature in the model, making this a 
 meaningful external fairness check.
 
 ### Evaluation Metric
-**Median Absolute Error (MAE)** — consistent with our primary model evaluation 
+**Median Absolute Error (MAE)** — consistent with the primary model evaluation 
 metric, and robust to the outliers present in outage duration data.
 
 ### Hypotheses
@@ -404,13 +412,13 @@ direction, not just one.
 ### Results
 
 |--|---------|---------|
-| Group Size | Eastern- 198 | Western- 89 |
-| Observed MAE Difference | 378.35 minutes | — |
-| P-value | 0.03 | - |
+| Group Size | Eastern- 200 | Western- 91 |
+| Observed MAE Difference | 414.48 minutes | — |
+| P-value | 0.004 | - |
 
 ### Conclusion
-Since the p-value of 0.03 is below our significance level of 0.05, we can  
+Since the p-value of 0.004 is below the significance level of 0.05, we can  
 reject the null hypothesis. The results suggest the model may not be fair 
 across grid regions,it appears to perform significantly differently for eastern 
-vs. western outages. This likely reflects the fact that our training data contains 
+vs. western outages. This likely reflects the fact that the training data contains 
 more eastern outages, giving the model more exposure to eastern outage patterns. 
