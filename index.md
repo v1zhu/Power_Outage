@@ -196,11 +196,11 @@ of day, or whether outages disproportionately occur during certain periods.
 - **Day:** outages starting between 6am and 6pm
 - **Night:** outages starting between 6pm and 6am
 
-**Null Hypothesis:** Power outages start times are uniformly distributed — 
+**Null Hypothesis:** Power outages start times are uniformly distributed and
 outages are equally likely to begin during the day or night.
 
 **Alternative Hypothesis:** Power outages are not uniformly distributed across 
-the day — outages occur at different frequencies during day vs. night.
+the day and outages occur at different frequencies during day vs. night.
 
 **Test Statistic:** Difference between the maximum and minimum proportion of 
 outages across the two time periods (day vs. night). This is a good choice 
@@ -216,3 +216,37 @@ suggests the distribution is not uniform.
 we reject the null hypothesis. The data suggests that power outages do not start 
 uniformly throughout the day.
 <iframe src="plots/hypothesis_test.html" width="800" height="500" frameborder="0"></iframe>
+
+## Framing a Prediction Problem
+
+**Prediction Problem:** Can we predict the duration of a power outage using 
+information available at the time the outage begins?
+
+**Type:** Regression: we are predicting `OUTAGE.DURATION`, a continuous 
+numerical variable measured in minutes.
+
+**Response Variable:** `OUTAGE.DURATION` — we chose this variable because 
+outage duration is the most direct measure of how severely an outage impacts 
+affected communities. Being able to predict how long an outage will help those affect
+know what they should do and plan during the outage. 
+
+**Features Used at Time of Prediction:**
+We only use features that would be known at the moment an outage begins:
+- `CLIMATE.REGION` — known from the outage location
+- `CAUSE.CATEGORY` — known at the time the outage is reported
+- `CLIMATE.CATEGORY` — known from weather monitoring at time of outage
+- `ANOMALY.LEVEL` — known from climate data at time of outage
+- `START.HOURS` — known from the outage start timestamp
+- `DAY.OF.WEEK` - know when the outage start
+
+We explicitly excluded features like `CUSTOMERS.AFFECTED` and 
+`OUTAGE.RESTORATION` since these are only known **after** the outage has already 
+occurred.
+
+**Evaluation Metric:** We use **Median Absolute Error (MAE)** as our primary 
+evaluation metric rather than RMSE. Our target variable `OUTAGE.DURATION` is 
+heavily right skewed. The median outage is ~700 minutes but the max is over 
+100,000 minutes. RMSE heavily penalizes large errors, meaning a handful of 
+extreme outliers would dominate the metric and give a misleading picture of 
+typical model performance. MAE is robust to these outliers and better reflects 
+how well the model predicts a **typical** outage duration.
