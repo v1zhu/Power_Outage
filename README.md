@@ -89,14 +89,14 @@ as model features.
 
 After cleaning, the dataset contains **1,476 rows** and **19 columns**. Here are the first few rows:
 
-<iframe src="assets/cleaned_outage_head.html" width="100%" height="350" frameborder="0"></iframe>
+<iframe src="assets/cleaned_outage_head.html" width="800" height="600" frameborder="0"></iframe>
 ---
 
 ### Univariate Analysis
 The following histogram shows the distribution of power outage durations in minutes. I thought it would be
 interesting to see if the data is normally distributed or skewed. 
 
-<iframe src="assets/outage_histogram.html" width="800" height="500" frameborder="0"></iframe>
+<iframe src="assets/outage_histogram.html" width="800" height="600" frameborder="0"></iframe>
 
 The distribution of outage durations is heavily right-skewed, with most outages 
 lasting under 10,000 minutes but a long tail of extreme events 
@@ -130,7 +130,7 @@ power outage durations. This geographic pattern suggests that climate region wil
 
 The boxplot below shows outage duration by climate category on a log scale:
 
-<img src="assets/outage_by_climate.png" alt="Outage Duration by Climate Category" width="800">
+<iframe src="assets/outage_by_climate.png" alt="Outage Duration by Climate Category" width="800" height="500" frameborder="0"></iframe>
 
 All three boxplots have a similar shape. With the cold and warm boxplots having slightly higher median
 than the normal climate boxplot. This might indicate that more extreme weather have an impact on the
