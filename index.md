@@ -23,7 +23,7 @@ economical data on the surrounding area.
 
 I will perform various data cleaning and analysis on the data to gain an understanding of the data.
 Then I will analyze the cause of missingness of data in a column. Then, I will explore the research question, do
-power outages occurr at the same frequencies during the daytime and night time. Finally we will create a baseline model
+power outages occurr at the same frequencies during the daytime and night time. Finally I will create a baseline model
 and a final model for the central question:
 
 > **Can we predict the duration of a power outage based on information 
@@ -31,7 +31,7 @@ and a final model for the central question:
 
 
 The dataset contains **1,534 rows** and **56 columns**, each representing a single major power 
-outage event. For our project we will focus on thh following columns:
+outage event. For the project I will focus on thh following columns:
 
 | Column | Description |
 |--------|-------------|
@@ -57,7 +57,7 @@ outage event. For our project we will focus on thh following columns:
 
 ### Data Cleaning
 
-We performed the following cleaning steps on the raw dataset:
+I performed the following cleaning steps on the raw dataset:
 
 1. **Combined date and time columns** — `OUTAGE.START.DATE` and `OUTAGE.START.TIME` 
 were merged into a single `OUTAGE.START` timestamp column, and similarly for 
@@ -70,17 +70,17 @@ removed. These represent outages where the start or end time was never recorded,
 making them impossible to use for duration prediction.
 
 3. **Created `IS.HURRICANE` column** — Instead of keeping the raw 
-`HURRICANE.NAMES` column (which was mostly null), we created a binary column 
+`HURRICANE.NAMES` column (which was mostly null), I created a binary column 
 indicating whether the outage was hurricane-related, then dropped the original column.
 
 4. **Imputed missing `TOTAL.PRICE` values** — All null values in `TOTAL.PRICE` 
-corresponded to July 2016. Since no July 2016 prices existed, we imputed using 
+corresponded to July 2016. Since no July 2016 prices existed, I imputed using 
 random sampling from July 2014 and July 2015 values, preserving the seasonal 
 distribution of electricity prices from recent years.
 
 5. **Filled missing `CLIMATE.REGION` with 'Hawaii'** — All null values in 
 `CLIMATE.REGION` belonged to Hawaii, which is not part of the standard U.S. 
-climate regions. We assigned these rows their own `'Hawaii'` region rather than 
+climate regions. I assigned these rows their own `'Hawaii'` region rather than 
 dropping them.
 
 6. **Extracted time features** — Added `START.HOURS` (hour of day, 0-23) and 
@@ -100,7 +100,7 @@ interesting to see if the data is normally distributed or skewed.
 
 The distribution of outage durations is heavily right-skewed, with most outages 
 lasting under 10,000 minutes but a long tail of extreme events 
-stretching beyond 100,000 minutes. This skew motivated our use of a log 
+stretching beyond 100,000 minutes. This skew motivated the use of a log 
 transformation on the target variable during modeling.
 
 This next graph shows the average duration of power outages for each cause category.
@@ -134,30 +134,30 @@ duration of power outages.
 
 ### Interesting Aggregates
 
-We grouped outages by `CLIMATE.REGION` and applied aggregation to examine regional patterns in outage 
+I grouped outages by `CLIMATE.REGION` and applied aggregation to examine regional patterns in outage 
 severity and scale:
 
 <iframe src="plots/agg_by_cause.html" width="100%" height="350" frameborder="0"></iframe>
 
 The East North Central and Northeast regions stand out with the highest average 
-outage durations and max duration. From this we can see that the climate region affects
+outage durations and max duration. From this you can see that the climate region affects
 the distribution and pattern of outage duration.
 
 ## Assessment of Missingness
 
 ### MNAR Analysis
 
-We believe the `CUSTOMERS.AFFECTED` column is **MNAR** (Missing Not At Random). 
-Around 30% of values are missing, and we suspect the missingness is related to 
+I believe the `CUSTOMERS.AFFECTED` column is **MNAR** (Missing Not At Random). 
+Around 30% of values are missing, and I suspect the missingness is related to 
 the value itself — smaller, less severe outages may not have had customer impact 
 formally recorded, meaning outages with fewer affected customers are more likely 
-to be missing. To confirm this and make it MAR, we would need additional data 
+to be missing. To confirm this and make it MAR, I would need additional data 
 such as utility company reporting standards or outage severity classifications, 
 which would explain why certain outages went unreported.
 
 ### Missingness Dependency
 
-We analyzed whether the missingness of `CUSTOMERS.AFFECTED` depends on other columns.
+I analyzed whether the missingness of `CUSTOMERS.AFFECTED` depends on other columns.
 
 **Depends on: `OUTAGE.DURATION`**
 
@@ -189,7 +189,7 @@ electricity price. The observed difference is consistent with random chance.
 
 ## Hypothesis Testing
 
-We investigated whether power outages are equally likely to start at any time 
+Iinvestigated whether power outages are equally likely to start at any time 
 of day, or whether outages disproportionately occur during certain periods.
 
 **Groups:**
@@ -212,8 +212,8 @@ suggests the distribution is not uniform.
 
 **Result:** p-value ≈ 0.0000
 
-**Conclusion:** Since our p-value is far below our significance level of 0.05, 
-we reject the null hypothesis. The data suggests that power outages do not start 
+**Conclusion:** Since the p-value is far below the significance level of 0.05, 
+I reject the null hypothesis. The data suggests that power outages do not start 
 uniformly throughout the day.
 <iframe src="plots/hypothesis_test.html" width="800" height="500" frameborder="0"></iframe>
 
@@ -225,13 +225,13 @@ information available at the time the outage begins?
 **Type:** Regression: we are predicting `OUTAGE.DURATION`, a continuous 
 numerical variable measured in minutes.
 
-**Response Variable:** `OUTAGE.DURATION` — we chose this variable because 
+**Response Variable:** `OUTAGE.DURATION`: I chose this variable because 
 outage duration is the most direct measure of how severely an outage impacts 
 affected communities. Being able to predict how long an outage will help those affect
 know what they should do and plan during the outage. 
 
 **Features Used at Time of Prediction:**
-We only use features that would be known at the moment an outage begins:
+I only used features that would be known at the moment an outage begins:
 - `CLIMATE.REGION` — known from the outage location
 - `CAUSE.CATEGORY` — known at the time the outage is reported
 - `CLIMATE.CATEGORY` — known from weather monitoring at time of outage
@@ -239,22 +239,22 @@ We only use features that would be known at the moment an outage begins:
 - `START.HOURS` — known from the outage start timestamp
 - `DAY.OF.WEEK` - know when the outage start
 
-We explicitly excluded features like `CUSTOMERS.AFFECTED` and 
+I explicitly excluded features like `CUSTOMERS.AFFECTED` and 
 `OUTAGE.RESTORATION` since these are only known **after** the outage has already 
 occurred.
 
-**Evaluation Metric:** We use **Median Absolute Error (MAE)** as our primary 
-evaluation metric rather than RMSE. Our target variable `OUTAGE.DURATION` is 
+**Evaluation Metric:** I used **Median Absolute Error (MAE)** as the primary 
+evaluation metric rather than RMSE. The target variable `OUTAGE.DURATION` is 
 heavily right skewed. The median outage is ~700 minutes but the max is over 
 100,000 minutes. RMSE heavily penalizes large errors, meaning a handful of 
 extreme outliers would dominate the metric and give a misleading picture of 
 typical model performance. MAE is robust to these outliers and better reflects 
-how well the model predicts a **typical** outage duration.
+how well the model predicts a typical outage duration.
 
 ## Baseline Model
 
 ### Model Description
-Our baseline model uses a **Linear Regression** to predict outage duration. 
+My baseline model uses a **Linear Regression** to predict outage duration. 
 
 ### Features
 The model uses three features:
@@ -280,7 +280,7 @@ outage started during the daytime or nighttime.
 
 ### Is This a Good Model?
 
-We do not believe this is a good model for several reasons:
+I do not believe this is a good model for several reasons:
 
 - A MAE of ~1,313 minutes (~22 hours) on test data means the model is off by 
 nearly a full day on a typical prediction, while the median outage duration is 
@@ -292,4 +292,4 @@ between these features and outage duration
 - Linear Regression assumes a linear relationship between features and the target, 
 which is unlikely given how skewed and complex outage duration is
 
-This baseline gives us a clear target to beat with our final model.
+This baseline gives us a clear target to beat for the final model.
