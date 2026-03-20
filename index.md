@@ -250,3 +250,46 @@ heavily right skewed. The median outage is ~700 minutes but the max is over
 extreme outliers would dominate the metric and give a misleading picture of 
 typical model performance. MAE is robust to these outliers and better reflects 
 how well the model predicts a **typical** outage duration.
+
+## Baseline Model
+
+### Model Description
+Our baseline model uses a **Linear Regression** to predict outage duration. 
+
+### Features
+The model uses three features:
+
+| Feature | Type | Encoding |
+|---------|------|----------|
+| `CAUSE.CATEGORY` | Nominal | One Hot Encoding (drop first) |
+| `CLIMATE.REGION` | Nominal | One Hot Encoding (drop first) |
+| `time_period` | Nominal | One Hot Encoding (drop first) |
+
+All three features are categorical with no natural ordering, so One Hot Encoding 
+is the appropriate choice. The `drop='first'` argument avoids the dummy variable 
+trap by dropping one category from each feature. `CAUSE.CATEGORY` tells the cause
+of the power outage. `CLIMATE.REGION` tells the region in which the power outage is located.
+`time_period` is a column created during the Hypothesis Testing, telling whether the power
+outage started during the daytime or nighttime.
+
+### Performance
+
+| Metric | Train | Test |
+|--------|-------|------|
+| Median Absolute Error | 1294.5 min | 1313.4 min |
+
+### Is This a Good Model?
+
+We do not believe this is a good model for several reasons:
+
+- A MAE of ~1,313 minutes (~22 hours) on test data means the model is off by 
+nearly a full day on a typical prediction, while the median outage duration is 
+only ~700 minutes — the model's error is **larger than the typical outage itself**
+- The train and test performance are very similar, which tells us the model is 
+not overfitting. Linear Regression is too simple  to capture the non-linear relationships
+between these features and outage duration
+- The model only uses three features and ignores potentially useful information
+- Linear Regression assumes a linear relationship between features and the target, 
+which is unlikely given how skewed and complex outage duration is
+
+This baseline gives us a clear target to beat with our final model.
