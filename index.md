@@ -107,8 +107,8 @@ This next graph shows the average duration of power outages for each cause categ
 
 <iframe src="plots/outage_average_by_cause.html" width="800" height="500" frameborder="0"></iframe>
 
-Fuel supply emergencies and severe weather cause the longest average outages by 
-far, while intentional attacks and public appeals tend to resolve much faster. 
+Fuel supply emergencies cause the longest average outages by 
+far, while intentional attacks and islanding tend to resolve much faster. 
 This suggests that cause category will be an important predictor of outage duration.
 
 This graph displays the average outage duration for each state in minutes. 
@@ -128,7 +128,8 @@ The boxplot below shows outage duration by climate category on a log scale:
 
 All three boxplots have a similar shape. With the cold and warm boxplots having slightly higher median
 than the normal climate boxplot. This might indicate that more extreme weather have an impact on the
-duration of power outages. 
+duration of power outages.
+
 ---
 
 ### Interesting Aggregates
@@ -141,3 +142,41 @@ severity and scale:
 The East North Central and Northeast regions stand out with the highest average 
 outage durations and max duration. From this we can see that the climate region affects
 the distribution and pattern of outage duration.
+
+## Assessment of Missingness
+
+### MNAR Analysis
+
+We believe the `CUSTOMERS.AFFECTED` column is **MNAR** (Missing Not At Random). 
+Around 30% of values are missing, and we suspect the missingness is related to 
+the value itself — smaller, less severe outages may not have had customer impact 
+formally recorded, meaning outages with fewer affected customers are more likely 
+to be missing. To confirm this and make it MAR, we would need additional data 
+such as utility company reporting standards or outage severity classifications, 
+which would explain why certain outages went unreported.
+
+### Missingness Dependency
+
+We analyzed whether the missingness of `CUSTOMERS.AFFECTED` depends on other columns.
+
+**Depends on: `OUTAGE.DURATION`**
+
+- **Null:** Missingness of `CUSTOMERS.AFFECTED` does not depend on `OUTAGE.DURATION`
+- **Alternative:** Missingness of `CUSTOMERS.AFFECTED` depends on `OUTAGE.DURATION`
+- **Result:** p-value = 0.0282 < 0.05 → reject null. The missingness of 
+`CUSTOMERS.AFFECTED` is dependent on `OUTAGE.DURATION`, suggesting it is **MAR** 
+with respect to outage duration. Longer outages are more likely to have customer 
+impact recorded.
+
+<iframe src="plots/missingness_duration.html" width="800" height="500" frameborder="0"></iframe>
+
+The distribution of outage duration differs noticeably between rows where 
+`CUSTOMERS.AFFECTED` is missing vs. not missing, confirming the dependency. 
+Outages with missing customer data tend to be shorter on average.
+
+**Does not depend on: `TOTAL.PRICE`**
+
+- **Null:** Missingness of `CUSTOMERS.AFFECTED` does not depend on `TOTAL.PRICE`
+- **Alternative:** Missingness of `CUSTOMERS.AFFECTED` depends on `TOTAL.PRICE`
+- **Result:** p-value 0.8248 > 0.05 → fail to reject null. No significant dependency 
+found between missingness and electricity price.
